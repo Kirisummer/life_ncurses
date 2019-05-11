@@ -117,5 +117,6 @@ u8 Input(p_Field field){
 		default:
 			mvaddstr(field->height+2,0,"'n' for next iteration, 's' for saving field, 'e' to edit field, 'q' to quit.");
 			getch();
+			return 1;
 	}
 }
