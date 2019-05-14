@@ -28,4 +28,5 @@ Such files can be created with any text, hex or bin editors or the game itself.
 
 ## Programmer's guide
 The comments will be added a bit later, as well a this guide. Sorry :/
-I'm looking forward for your help as I'm just a beginner in C programming and there's some memory leaking.
+I'm looking forward for your help as I'm just a beginner in C programming and there's some memory leaking.  
+**Edit:** I added some comments, so the code should be clear and understandable.
