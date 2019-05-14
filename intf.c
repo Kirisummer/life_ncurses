@@ -1,13 +1,24 @@
 #include "intf.h"
 
+/* Initialise the ncurses screen. */
 void initScr(){
-	initscr();
-	raw();	
-	noecho();
-	keypad(stdscr,TRUE);
+	initscr(); /* Initialise the screen */
+	raw();	/* Catch all the signals, including ^C and others */
+	noecho(); /* Do not echo keypresses */
+	keypad(stdscr,TRUE); /* Use arrow keys */
 }
 
+/* Internal function, to be used only inside of library.
+ * Edit the playfield.
+ * TODO: Exit from the edit mode, discarding changes.
+ */
 u8 editField(p_Field field, u32 *x, u32 *y){
+	/* 1. Print the field.
+	 * 2. Move the cursor to (1,1), as the (0,0) is border.
+	 * 3. Push changes to the screen.
+	 * 4. Move the cursor, toggle the cell, save field or show 
+	 *    brief help otherwise.
+	 */
 	printField(field);
 	move(*x+1,*y+1);
 	refresh();
@@ -44,18 +55,28 @@ u8 editField(p_Field field, u32 *x, u32 *y){
 	return 1;
 }
 
+/* Define the playfield by hand.
+ * TODO: change defField()'s type to u8 to give user an option
+ * to exit from definition screen. 
+ */
 void defField(p_Field *field){
+	/* 1. Get maximum screen dimensions.
+	 * 2. Prompt about dimensions until valid ones are gotten.
+	 * 3. Edit the empty field.
+	 * 4. Continue.
+	 */
+
 	u32 height,width; //dimensions to enter
 	u32 t_height,t_width; //maximum dimensions
 	u32 x,y; //current cursor coordinates. x is row, y is collumn
 
 	getmaxyx(stdscr,t_height,t_width);
-	echo();
+	echo(); //Turning echo on, so the user sees their input
 	do{
 		printw("Enter board dimensions (Your current terminal's maximum is %ux%u): ",t_height-2,t_width-2);
 		scanw("%u %u",&height,&width);
 	}while(height>t_height-2 || width>t_width-2);
-	noecho();
+	noecho(); //Turning it back off
 
 	*field=allocField(height,width);
 	x=y=0;
@@ -63,13 +84,18 @@ void defField(p_Field *field){
 	return;
 }
 
+/* Print the playfield */
 void printField(p_Field field){
 	u32 i,j;
-	clear();
-	move(0,0);
+	clear(); // Reset the screen
+
+	/* Draw the top of the border */
+	move(0,0); 
 	for(j=0; j<field->width+2; ++j){
 		addch('*');
 	}
+
+	/* Drawing playfield contents, surrounded by the border */
 	for(i=0; i<field->height; ++i){
 		mvaddch(i+1,0,'*');
 		for(j=0; j<field->width; ++j){
@@ -80,18 +106,27 @@ void printField(p_Field field){
 		}
 		addch('*');
 	}
+	/* Drawing the lower border. */
 	move(i+1,0);
 	for(j=0; j<field->width+2; ++j){
 		addch('*');
 	}
+	/* Push updates to the screen. */
 	refresh();
 }
 
+/* Quit the ncurses mode */
 void killScr(){
 	endwin();
 }
 
+/* Process keypresses to interact with field. */
 u8 Input(p_Field field){
+	/* 1. Print the field.
+	 * 2. Go to the next iteration, edit, save the field, quit
+	 *    or show a brief help otherwise.
+	 */
+
 	char fname[256];
 	u32 x,y;
 
